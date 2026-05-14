@@ -17,6 +17,7 @@ public class AppProperties {
     private Gemini gemini = new Gemini();
     private String cloudinaryUrl;
     private Oauth oauth = new Oauth();
+    private Shipping shipping = new Shipping();
 
     @Getter
     @Setter
@@ -45,5 +46,14 @@ public class AppProperties {
     public static class Oauth {
         private String googleClientId;
         private String appleClientId;
+    }
+
+    @Getter
+    @Setter
+    public static class Shipping {
+        private double originLatitude = 10.7769;
+        private double originLongitude = 106.7009;
+        private int baseFee = 15_000;
+        private int perKmFee = 4_500;
     }
 }

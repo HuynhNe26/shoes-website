@@ -3,6 +3,7 @@ package com.example.backend.repository;
 import com.example.backend.entity.ProductVariant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -14,5 +15,5 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             where coalesce(v.stock, 0) <= :threshold
             order by v.stock asc
             """)
-    List<ProductVariant> findLowStock(Integer threshold);
+    List<ProductVariant> findLowStock(@Param("threshold") Integer threshold);
 }
