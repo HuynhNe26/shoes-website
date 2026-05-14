@@ -3,9 +3,12 @@ package com.example.backend.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -21,62 +24,77 @@ public class User {
     @Column(length = 255, nullable = false, unique = true)
     private String email;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255)
     private String password;
 
-    @Column(name = "first_name", length = 100, nullable = false)
+    @Column(name = "first_name", length = 100)
     private String firstName;
 
-    @Column(name = "last_name", length = 100, nullable = false)
+    @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     private String gender;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255)
     private String address;
 
-    @Column(name = "date_of_birth", nullable = false)
+    @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "phone_number", length = 13, nullable = false)
+    @Column(name = "phone_number", length = 13)
     private String phoneNumber;
 
-    @Column(nullable = false)
-    private Integer point;
+    private Integer point = 1;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String favorite;
+    private Map<String, Object> favorite;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "search_history", columnDefinition = "jsonb")
-    private String searchHistory;
+    private Map<String, Object> searchHistory;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Membership membership;
 
-    @Column(name = "member_start_time", nullable = false)
+    @Column(name = "member_start_time")
     private LocalDateTime memberStartTime;
 
-    @Column(name = "member_end_time", nullable = false)
+    @Column(name = "member_end_time")
     private LocalDateTime memberEndTime;
 
     @Column(columnDefinition = "TEXT")
     private String image;
 
-    @Column(name = "login_time", nullable = false)
+    @Column(name = "login_time")
     private LocalDateTime loginTime;
 
-    @Column(name = "logout_time", nullable = false)
+    @Column(name = "logout_time")
     private LocalDateTime logoutTime;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 50)
     private String status;
 
+    @PrePersist
+    void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (point == null) {
+            point = 1;
+        }
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

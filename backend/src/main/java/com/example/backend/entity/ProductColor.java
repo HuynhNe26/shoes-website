@@ -6,29 +6,21 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @Setter
-@Table(name = "membership")
-public class Membership {
+@Entity
+@Table(name = "color")
+public class ProductColor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id", updatable = false, nullable = false)
-    private Long memberId;
+    @Column(name = "color_id", nullable = false, updatable = false)
+    private Long colorId;
 
-    @Column(name = "member_name", length = 100)
-    private String memberName;
+    @Column(name = "color", length = 100)
+    private String color;
 
-    private Integer point;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "use_time")
-    private Integer useTime;
-
-    private Integer benefit;
+    private Boolean status;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -6,35 +6,27 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @Setter
-@Table(name = "membership")
-public class Membership {
+@Entity
+@Table(name = "categories")
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id", updatable = false, nullable = false)
-    private Long memberId;
+    @Column(name = "category_id", nullable = false, updatable = false)
+    private Long categoryId;
 
-    @Column(name = "member_name", length = 100)
-    private String memberName;
-
-    private Integer point;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "use_time")
-    private Integer useTime;
-
-    private Integer benefit;
+    @Column(name = "category_name", length = 100, nullable = false)
+    private String categoryName;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    private Boolean status;
 
     @PrePersist
     void prePersist() {

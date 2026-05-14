@@ -5,36 +5,32 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity
 @Getter
 @Setter
-@Table(name = "membership")
-public class Membership {
+@Entity
+@Table(name = "carts")
+public class Cart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id", updatable = false, nullable = false)
-    private Long memberId;
+    @Column(name = "cart_id", nullable = false, updatable = false)
+    private Long cartId;
 
-    @Column(name = "member_name", length = 100)
-    private String memberName;
-
-    private Integer point;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "use_time")
-    private Integer useTime;
-
-    private Integer benefit;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> items = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
