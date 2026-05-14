@@ -11,6 +11,7 @@ import com.example.backend.repository.ProductRepository;
 import com.example.backend.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -32,7 +33,10 @@ public class CatalogService {
     @Transactional(readOnly = true)
     public List<ProductCardResponse> list(String keyword) {
         String normalized = StringUtils.hasText(keyword) ? keyword.trim() : null;
-        return productRepository.searchProducts(normalized).stream()
+        List<Product> products = normalized == null
+                ? productRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
+                : productRepository.searchProducts(normalized);
+        return products.stream()
                 .map(this::toCard)
                 .toList();
     }
