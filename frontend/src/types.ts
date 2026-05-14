@@ -54,8 +54,7 @@ export interface ProductDetail {
 }
 
 export interface CartItem {
-  id?: number
-  itemId?: number
+  id: number
   pvId: number
   productId: number
   productName: string

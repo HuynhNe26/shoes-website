@@ -1,151 +1,197 @@
 <template>
-  <main class="admin-shell">
-    <header class="admin-topbar">
-      <RouterLink to="/" class="brand">SHOES STUDIO</RouterLink>
-      <strong>Operations</strong>
-    </header>
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <RouterLink class="brand" to="/">SoleMotion</RouterLink>
+      <RouterLink to="/">Storefront</RouterLink>
+      <a href="#analytics">Analytics</a>
+      <a href="#products">Products</a>
+      <a href="#vouchers">Vouchers</a>
+    </aside>
 
-    <section class="admin-hero">
-      <div>
-        <p>Revenue forecast</p>
-        <h1>{{ money(analytics?.forecastNextMonthRevenue || 0) }}</h1>
-      </div>
-      <div class="admin-kpis">
-        <article>
+    <main class="admin-main">
+      <section id="analytics" class="admin-hero">
+        <div>
+          <p class="eyebrow">Admin AI</p>
+          <h1>Operations cockpit</h1>
+        </div>
+        <button class="solid-button" type="button" @click="loadInsights">Refresh</button>
+      </section>
+
+      <section v-if="analytics" class="metric-grid">
+        <div class="metric-card">
           <span>This month</span>
-          <strong>{{ money(analytics?.currentMonthRevenue || 0) }}</strong>
-        </article>
-        <article>
+          <strong>{{ money(analytics.currentMonthRevenue) }}</strong>
+        </div>
+        <div class="metric-card">
           <span>Orders</span>
-          <strong>{{ analytics?.currentMonthOrders || 0 }}</strong>
-        </article>
-        <article>
-          <span>Last month</span>
-          <strong>{{ money(analytics?.previousMonthRevenue || 0) }}</strong>
-        </article>
-      </div>
-    </section>
-
-    <section class="admin-grid">
-      <article class="ops-panel wide">
-        <div class="panel-head">
-          <h2>AI insight</h2>
-          <button @click="loadAnalytics">Refresh</button>
+          <strong>{{ analytics.currentMonthOrders }}</strong>
         </div>
-        <p>{{ analytics?.aiInsight || 'Login as admin to load live insight.' }}</p>
-      </article>
-
-      <article class="ops-panel">
-        <div class="panel-head">
-          <h2>Low stock</h2>
-          <span>{{ analytics?.lowStock?.length || 0 }}</span>
+        <div class="metric-card">
+          <span>Next month forecast</span>
+          <strong>{{ money(analytics.forecastNextMonthRevenue) }}</strong>
         </div>
-        <div v-for="item in analytics?.lowStock || fallbackLowStock" :key="item.pvId" class="stock-row">
-          <div>
-            <strong>{{ item.productName }}</strong>
-            <p>Size {{ item.size || '-' }} · {{ item.color || '-' }}</p>
+        <div class="metric-card wide">
+          <span>AI insight</span>
+          <p>{{ analytics.aiInsight }}</p>
+        </div>
+      </section>
+
+      <section v-if="analytics?.lowStock.length" class="admin-section">
+        <div class="section-heading">
+          <p class="eyebrow">Inventory</p>
+          <h2>Low stock alerts</h2>
+        </div>
+        <div class="table-like">
+          <div v-for="item in analytics.lowStock" :key="item.pvId" class="table-row">
+            <span>{{ item.productName }}</span>
+            <span>EU {{ item.size ?? '-' }}</span>
+            <span>{{ item.color ?? 'Default' }}</span>
+            <strong>{{ item.stock ?? 0 }} left</strong>
           </div>
-          <span>{{ item.stock }}</span>
         </div>
-      </article>
+      </section>
 
-      <article class="ops-panel">
-        <div class="panel-head">
-          <h2>Voucher</h2>
-          <button @click="createVoucher">Create</button>
+      <section id="products" class="admin-section form-section">
+        <div class="section-heading">
+          <p class="eyebrow">Catalog</p>
+          <h2>Create product</h2>
         </div>
-        <label>
-          Code
-          <input v-model="voucher.voucherCode" />
-        </label>
-        <label>
-          Discount %
-          <input v-model.number="voucher.voucherDiscount" type="number" />
-        </label>
-        <label class="toggle-line">
-          <input v-model="voucher.notifyVipDiamond" type="checkbox" />
-          Notify VIP/DIAMOND
-        </label>
-      </article>
+        <form class="admin-form" @submit.prevent="saveProduct">
+          <input v-model="productName" placeholder="Product name" />
+          <textarea v-model="description" placeholder="Description"></textarea>
+          <div class="two-col">
+            <input v-model.number="price" placeholder="Price" type="number" />
+            <input v-model.number="priceDiscount" placeholder="Sale price" type="number" />
+          </div>
+          <div class="two-col">
+            <input v-model.number="sizeId" placeholder="Size ID" type="number" />
+            <input v-model.number="colorId" placeholder="Color ID" type="number" />
+          </div>
+          <input v-model="image" placeholder="Variant image URL" />
+          <div class="two-col">
+            <input v-model.number="stock" placeholder="Stock" type="number" />
+            <label class="check-line">
+              <input v-model="limited" type="checkbox" />
+              Limited drop
+            </label>
+          </div>
+          <div class="two-col">
+            <input v-model="startTime" type="datetime-local" />
+            <input v-model="endTime" type="datetime-local" />
+          </div>
+          <button class="solid-button full" type="submit">Save product</button>
+        </form>
+      </section>
 
-      <article class="ops-panel">
-        <div class="panel-head">
-          <h2>Limited product</h2>
-          <button @click="createProduct">Create</button>
+      <section id="vouchers" class="admin-section form-section">
+        <div class="section-heading">
+          <p class="eyebrow">Campaign</p>
+          <h2>Create voucher</h2>
         </div>
-        <label>
-          Product name
-          <input v-model="product.productName" />
-        </label>
-        <label>
-          Price
-          <input v-model.number="variant.price" type="number" />
-        </label>
-        <label class="toggle-line">
-          <input v-model="product.limited" type="checkbox" />
-          Limited launch
-        </label>
-      </article>
-    </section>
-  </main>
+        <form class="admin-form" @submit.prevent="saveVoucher">
+          <input v-model="voucherCode" placeholder="Voucher code" />
+          <textarea v-model="voucherDescription" placeholder="Voucher description"></textarea>
+          <div class="two-col">
+            <input v-model.number="voucherDiscount" placeholder="Discount" type="number" />
+            <input v-model.number="minOrderValue" placeholder="Min order value" type="number" />
+          </div>
+          <label class="check-line">
+            <input v-model="notifyVipDiamond" type="checkbox" />
+            Email VIP and DIAMOND customers
+          </label>
+          <button class="solid-button full" type="submit">Publish voucher</button>
+        </form>
+      </section>
+      <p v-if="notice" class="success-box">{{ notice }}</p>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { createAdminProduct, createAdminVoucher, getAdminInsights } from '../../api/client'
 import type { AdminAnalytics } from '../../types'
 
-const fallbackLowStock = [
-  { pvId: 1, productId: 101, productName: 'Aero Pulse Runner', size: 42, color: 'Crimson', stock: 3 },
-  { pvId: 2, productId: 103, productName: 'Limited Night Fly', size: 41, color: 'Volt', stock: 2 },
-]
-const analytics = ref<AdminAnalytics>()
-const voucher = ref({
-  voucherCode: 'DIAMONDDROP',
-  voucherType: true,
-  voucherDiscount: 15,
-  minOrderValue: 2000000,
-  status: true,
-  notifyVipDiamond: true,
-})
-const product = ref({
-  productName: 'Limited Night Fly',
-  description: 'Limited launch with reflective overlays.',
-  image: {},
-  imageDescription: {},
-  limited: true,
-  startTime: new Date().toISOString(),
-  endTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(),
-})
-const variant = ref({ price: 4990000, priceDiscount: 4590000, stock: 12, status: true })
+const router = useRouter()
+const analytics = ref<AdminAnalytics | null>(null)
+const notice = ref('')
+const productName = ref('')
+const description = ref('')
+const image = ref('')
+const price = ref<number | null>(null)
+const priceDiscount = ref<number | null>(null)
+const sizeId = ref<number | null>(null)
+const colorId = ref<number | null>(null)
+const stock = ref<number | null>(0)
+const limited = ref(false)
+const startTime = ref('')
+const endTime = ref('')
+const voucherCode = ref('')
+const voucherDescription = ref('')
+const voucherDiscount = ref<number | null>(10)
+const minOrderValue = ref<number | null>(0)
+const notifyVipDiamond = ref(true)
 
-onMounted(loadAnalytics)
+onMounted(loadInsights)
 
-async function loadAnalytics() {
+async function loadInsights() {
   try {
     analytics.value = await getAdminInsights()
   } catch {
-    analytics.value = {
-      currentMonthRevenue: 186000000,
-      previousMonthRevenue: 158000000,
-      currentMonthOrders: 92,
-      forecastNextMonthRevenue: 211000000,
-      lowStock: fallbackLowStock,
-      aiInsight: 'Revenue is trending up. Refill limited variants first and keep VIP voucher pressure below margin loss.',
-    }
+    await router.push('/login')
   }
 }
 
-async function createVoucher() {
-  await createAdminVoucher(voucher.value)
+async function saveProduct() {
+  await createAdminProduct({
+    productName: productName.value,
+    description: description.value,
+    image: image.value ? { main: image.value } : null,
+    imageDescription: null,
+    limited: limited.value,
+    startTime: toIso(startTime.value),
+    endTime: toIso(endTime.value),
+    variants: [
+      {
+        price: price.value,
+        priceDiscount: priceDiscount.value,
+        sizeId: sizeId.value,
+        colorId: colorId.value,
+        image: image.value,
+        stock: stock.value,
+        status: true,
+      },
+    ],
+  })
+  notice.value = 'Product saved.'
+  await loadInsights()
 }
 
-async function createProduct() {
-  await createAdminProduct({ ...product.value, variants: [variant.value] })
+async function saveVoucher() {
+  await createAdminVoucher({
+    voucherCode: voucherCode.value,
+    voucherType: true,
+    voucherDiscount: voucherDiscount.value,
+    minOrderValue: minOrderValue.value,
+    maxReductionValue: null,
+    quantity: 100,
+    description: voucherDescription.value,
+    contributor: 'SoleMotion',
+    contributorImage: null,
+    voucherStart: new Date().toISOString(),
+    voucherEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
+    status: true,
+    notifyVipDiamond: notifyVipDiamond.value,
+  })
+  notice.value = 'Voucher published.'
 }
 
-function money(value: number) {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
+function toIso(value: string) {
+  return value ? new Date(value).toISOString() : null
+}
+
+function money(value: number | null | undefined) {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value ?? 0)
 }
 </script>
