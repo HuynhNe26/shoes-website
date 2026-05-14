@@ -201,15 +201,30 @@ public class CatalogService {
         productRepository.searchProducts(term.trim()).forEach(product -> ordered.putIfAbsent(product.getProductId(), product));
     }
 
-    private String firstImageValue(Map<String, Object> image) {
-        if (image == null || image.isEmpty()) {
+    private String firstImageValue(Object image) {
+        if (image == null) {
             return null;
         }
-        return image.values().stream()
+        if (image instanceof Map<?, ?> map) {
+            return map.values().stream()
+                    .filter(Objects::nonNull)
+                    .map(Object::toString)
+                    .filter(StringUtils::hasText)
+                    .findFirst()
+                    .orElse(null);
+        }
+        if (image instanceof Iterable<?> iterable) {
+            for (Object value : iterable) {
+                if (value != null && StringUtils.hasText(value.toString())) {
+                    return value.toString();
+                }
+            }
+            return null;
+        }
+        return Optional.of(image)
                 .filter(Objects::nonNull)
                 .map(Object::toString)
                 .filter(StringUtils::hasText)
-                .findFirst()
                 .orElse(null);
     }
 }

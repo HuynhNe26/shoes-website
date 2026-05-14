@@ -9,7 +9,6 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -30,11 +29,11 @@ public class Product {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private Map<String, Object> image;
+    private Object image;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "image_description", columnDefinition = "jsonb")
-    private Map<String, Object> imageDescription;
+    private Object imageDescription;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

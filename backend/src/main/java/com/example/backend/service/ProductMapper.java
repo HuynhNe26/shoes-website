@@ -83,20 +83,29 @@ public class ProductMapper {
         if (variantImage != null) {
             return variantImage;
         }
-        Map<String, Object> image = product.getImage();
-        if (image == null || image.isEmpty()) {
+        Object image = product.getImage();
+        if (image == null) {
             return null;
         }
-        return image.values().stream()
-                .flatMap(value -> {
-                    if (value instanceof Iterable<?> iterable) {
-                        return toStringList(iterable).stream();
-                    }
-                    return List.of(value.toString()).stream();
-                })
-                .filter(value -> value != null && !value.isBlank())
-                .min(Comparator.comparingInt(String::length))
-                .orElse(null);
+        if (image instanceof Map<?, ?> map) {
+            return map.values().stream()
+                    .flatMap(value -> {
+                        if (value instanceof Iterable<?> iterable) {
+                            return toStringList(iterable).stream();
+                        }
+                        return List.of(value.toString()).stream();
+                    })
+                    .filter(value -> value != null && !value.isBlank())
+                    .min(Comparator.comparingInt(String::length))
+                    .orElse(null);
+        }
+        if (image instanceof Iterable<?> iterable) {
+            return toStringList(iterable).stream()
+                    .filter(value -> value != null && !value.isBlank())
+                    .min(Comparator.comparingInt(String::length))
+                    .orElse(null);
+        }
+        return image.toString().isBlank() ? null : image.toString();
     }
 
     private List<String> toStringList(Iterable<?> values) {

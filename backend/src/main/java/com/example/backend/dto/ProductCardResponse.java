@@ -2,13 +2,12 @@ package com.example.backend.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 public record ProductCardResponse(
         Long productId,
         String productName,
         String description,
-        Map<String, Object> image,
+        Object image,
         String displayImage,
         Boolean limited,
         LocalDateTime startTime,
